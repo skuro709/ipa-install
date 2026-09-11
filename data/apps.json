@@ -1,0 +1,9 @@
+[
+  {
+    "id": "001",
+    "name": "Esign",
+    "icon": "apps/esign/icon.jpg",
+    "ipa": "apps/esign/esign_5.0.2_unsigned.ipa",
+    "manifest": "apps/esgin/manifest.plist"
+  },
+]
