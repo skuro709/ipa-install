@@ -10,7 +10,7 @@
   {
     "id": "002",
     "name": "Ksign",
-    "icon": "apps/ksign/icon.svg",
+    "icon": "apps/ksign/icon.png",
     "ipa": "apps/kaign/App3.ipa",
     "manifest": "apps/ksign/manifest.plist"
   }
