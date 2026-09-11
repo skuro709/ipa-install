@@ -6,4 +6,12 @@
     "ipa": "apps/esign/esign_5.0.2_unsigned.ipa",
     "manifest": "apps/esgin/manifest.plist"
   },
+
+  {
+    "id": "002",
+    "name": "Ksign",
+    "icon": "apps/ksign/icon.svg",
+    "ipa": "apps/kaign/App3.ipa",
+    "manifest": "apps/ksign/manifest.plist"
+  }
 ]
