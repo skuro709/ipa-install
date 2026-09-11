@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FFFCF8">
+  <meta name="description" content="App Library">
+  <title>App Library</title>
+
+  <style>
+    :root {
+      --background: #fffcf8;
+      --card: #ffffff;
+      --primary: #c97852;
+      --primary-hover: #b96542;
+      --text: #3a332f;
+      --secondary-text: #8a817b;
+      --border: #ede5de;
+      --overlay: rgba(58, 51, 47, 0.18);
+      --radius-card: 18px;
+      --radius-modal: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--background);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--background);
+      color: var(--text);
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .header {
+      margin-bottom: 36px;
+    }
+
+    .header h1 {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .app-card {
+      appearance: none;
+      width: 100%;
+      min-height: 220px;
+      padding: 28px 20px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 3px 12px rgba(58, 51, 47, 0.035);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      text-align: center;
+      transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        border-color 0.16s ease;
+    }
+
+    .app-card:hover {
+      transform: translateY(-2px);
+      border-color: #e5d9d0;
+      box-shadow: 0 7px 18px rgba(58, 51, 47, 0.07);
+    }
+
+    .app-card:active {
+      transform: translateY(0);
+    }
+
+    .app-card:focus-visible {
+      outline: 3px solid rgba(201, 120, 82, 0.28);
+      outline-offset: 3px;
+    }
+
+    .app-icon {
+      display: block;
+      width: 104px;
+      height: 104px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+
+    .app-name {
+      max-width: 100%;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 56px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--card);
+      color: var(--secondary-text);
+      text-align: center;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--overlay);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity 0.18s ease,
+        visibility 0.18s ease;
+    }
+
+    .modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .install-card {
+      position: relative;
+      width: min(440px, 100%);
+      min-height: 230px;
+      padding: 38px 88px 38px 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-modal);
+      background: var(--card);
+      box-shadow: 0 18px 50px rgba(58, 51, 47, 0.14);
+      transform: scale(0.97);
+      transition: transform 0.18s ease;
+    }
+
+    .modal-overlay.is-open .install-card {
+      transform: scale(1);
+    }
+
+    .modal-app {
+      min-height: 154px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .modal-app-icon {
+      display: block;
+      width: 92px;
+      height: 92px;
+      flex: 0 0 92px;
+      object-fit: contain;
+    }
+
+    .modal-app-name {
+      margin: 0;
+      color: var(--text);
+      font-size: 21px;
+      font-weight: 650;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-actions {
+      position: absolute;
+      top: 58px;
+      right: 26px;
+      bottom: 34px;
+      width: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .icon-button {
+      appearance: none;
+      width: 48px;
+      height: 48px;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition:
+        background-color 0.14s ease,
+        border-color 0.14s ease,
+        transform 0.14s ease;
+    }
+
+    .icon-button:hover {
+      background: #fffaf6;
+      border-color: #dfd1c8;
+    }
+
+    .icon-button:active {
+      transform: scale(0.95);
+    }
+
+    .icon-button:focus-visible {
+      outline: 3px solid rgba(201, 120, 82, 0.28);
+      outline-offset: 2px;
+    }
+
+    .icon-button img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 38px;
+      height: 38px;
+      padding: 9px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+    }
+
+    .close-button:hover {
+      background: #f8f3ef;
+    }
+
+    .download-button {
+      margin-top: auto;
+    }
+
+    .loading {
+      grid-column: 1 / -1;
+      padding: 48px 24px;
+      color: var(--secondary-text);
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .app-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 24px, 420px);
+        padding: 30px 0 48px;
+      }
+
+      .header {
+        margin-bottom: 24px;
+      }
+
+      .app-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .app-card {
+        min-height: 174px;
+        padding: 20px 12px 18px;
+        border-radius: 16px;
+        gap: 13px;
+      }
+
+      .app-icon {
+        width: 76px;
+        height: 76px;
+      }
+
+      .app-name {
+        font-size: 15px;
+      }
+
+      .modal-overlay {
+        padding: 18px;
+      }
+
+      .install-card {
+        min-height: 205px;
+        padding: 34px 78px 30px 24px;
+      }
+
+      .modal-app {
+        min-height: 140px;
+        gap: 16px;
+      }
+
+      .modal-app-icon {
+        width: 72px;
+        height: 72px;
+        flex-basis: 72px;
+      }
+
+      .modal-app-name {
+        font-size: 18px;
+      }
+
+      .modal-actions {
+        top: 52px;
+        right: 18px;
+        bottom: 28px;
+        width: 44px;
+      }
+
+      .icon-button {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+
+      .close-button {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        padding: 9px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .page {
+        width: calc(100% - 16px);
+      }
+
+      .app-grid {
+        gap: 8px;
+      }
+
+      .app-card {
+        min-height: 160px;
+        padding: 16px 8px;
+      }
+
+      .app-icon {
+        width: 68px;
+        height: 68px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .app-card,
+      .modal-overlay,
+      .install-card,
+      .icon-button {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>App Library</h1>
+    </header>
+
+    <section
+      id="appGrid"
+      class="app-grid"
+      aria-label="アプリ一覧"
+    >
+      <div class="loading">読み込み中</div>
+    </section>
+  </main>
+
+  <div
+    id="modalOverlay"
+    class="modal-overlay"
+    aria-hidden="true"
+  >
+    <section
+      id="installCard"
+      class="install-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalAppName"
+    >
+      <button
+        id="closeButton"
+        class="icon-button close-button"
+        type="button"
+        aria-label="閉じる"
+      >
+        <img src="assets/icons/close.svg" alt="">
+      </button>
+
+      <div class="modal-app">
+        <img
+          id="modalAppIcon"
+          class="modal-app-icon"
+          src=""
+          alt=""
+        >
+
+        <h2
+          id="modalAppName"
+          class="modal-app-name"
+        ></h2>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          id="installButton"
+          class="icon-button"
+          type="button"
+          aria-label="IPAをインストール"
+        >
+          <img src="assets/icons/install.svg" alt="">
+        </button>
+
+        <button
+          id="downloadButton"
+          class="icon-button download-button"
+          type="button"
+          aria-label="IPAをダウンロード"
+        >
+          <img src="assets/icons/download.svg" alt="">
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const appGrid = document.getElementById("appGrid");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalAppIcon = document.getElementById("modalAppIcon");
+    const modalAppName = document.getElementById("modalAppName");
+    const closeButton = document.getElementById("closeButton");
+    const installButton = document.getElementById("installButton");
+    const downloadButton = document.getElementById("downloadButton");
+
+    let selectedApp = null;
+
+    async function loadApps() {
+      try {
+        const response = await fetch("data/apps.json", {
+          cache: "no-cache"
+        });
+
+        if (!response.ok) {
+          throw new Error("apps.json could not be loaded.");
+        }
+
+        const apps = await response.json();
+
+        if (!Array.isArray(apps)) {
+          throw new Error("Invalid apps.json format.");
+        }
+
+        renderApps(apps);
+      } catch (error) {
+        appGrid.innerHTML = "";
+
+        const emptyState = document.createElement("div");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "アプリを読み込めませんでした。";
+
+        appGrid.appendChild(emptyState);
+        console.error(error);
+      }
+    }
+
+    function renderApps(apps) {
+      appGrid.innerHTML = "";
+
+      if (apps.length === 0) {
+        const emptyState = document.createElement("div");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "アプリがありません。";
+        appGrid.appendChild(emptyState);
+        return;
+      }
+
+      apps.forEach((app) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "app-card";
+        card.setAttribute(
+          "aria-label",
+          `${app.name}のインストール方法を表示`
+        );
+
+        const icon = document.createElement("img");
+        icon.className = "app-icon";
+        icon.src = app.icon;
+        icon.alt = "";
+
+        const name = document.createElement("span");
+        name.className = "app-name";
+        name.textContent = app.name;
+
+        card.appendChild(icon);
+        card.appendChild(name);
+
+        card.addEventListener("click", () => {
+          openModal(app);
+        });
+
+        appGrid.appendChild(card);
+      });
+    }
+
+    function openModal(app) {
+      selectedApp = app;
+
+      modalAppIcon.src = app.icon;
+      modalAppIcon.alt = "";
+      modalAppName.textContent = app.name;
+
+      modalOverlay.classList.add("is-open");
+      modalOverlay.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+
+      window.setTimeout(() => {
+        closeButton.focus();
+      }, 20);
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove("is-open");
+      modalOverlay.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      selectedApp = null;
+    }
+
+    function installApp() {
+      if (!selectedApp || !selectedApp.manifest) {
+        return;
+      }
+
+      const manifestUrl = new URL(
+        selectedApp.manifest,
+        window.location.href
+      ).href;
+
+      const installUrl =
+        `itms-services://?action=download-manifest&url=${encodeURIComponent(manifestUrl)}`;
+
+      window.location.href = installUrl;
+    }
+
+    function downloadApp() {
+      if (!selectedApp || !selectedApp.ipa) {
+        return;
+      }
+
+      const downloadUrl = new URL(
+        selectedApp.ipa,
+        window.location.href
+      ).href;
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    closeButton.addEventListener("click", closeModal);
+    installButton.addEventListener("click", installApp);
+    downloadButton.addEventListener("click", downloadApp);
+
+    modalOverlay.addEventListener("click", (event) => {
+      if (event.target === modalOverlay) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modalOverlay.classList.contains("is-open")) {
+        closeModal();
+      }
+    });
+
+    loadApps();
+  </script>
+</body>
+</html>
